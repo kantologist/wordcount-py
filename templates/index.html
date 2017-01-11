@@ -4,6 +4,7 @@
     <title>Wordcount</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" type="text/css" href="../static/main.css">
     <style>
       .container {
         max-width: 1000px;
@@ -20,8 +21,14 @@
             <div class="form-group">
               <input type="text" ng-model="url" name="url" class="form-control" id="url-box" placeholder="Enter URL..." style="max-width: 300px;" required>
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
+            <button type="submit" class="btn btn-primary" ng-disabled="loading">[[ submitButtonText ]]</button>
           </form>
+          <div class="alert alert-danger" role="alert" ng-show='urlerror'>
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            <span>There was an error submitting your URL.<br>
+              Please check to make sure it is valid before trying again.</span>
+            </div>
         </div>
         <div class="col-sm-5 col-sm-offset-1">
             <h2>Frequencies</h2>
@@ -42,14 +49,19 @@
            </tbody>
            </table>
           </div>
+          <img class="col-sm-3 col-sm-offset-4" src="{{ url_for('static',
+          filename='spinner.gif') }}" ng-show="loading">
         </div>
       </div>
+      <br>
+      <word-count-chart data="wordcounts"></word-count-chart>
     </div>
     <br><br>
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
     <script  type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script>
     (function () {
 
@@ -63,6 +75,10 @@
 
       .controller('WordcountController', ['$scope', '$log', '$http', '$timeout',
         function($scope, $log, $http, $timeout) {
+
+          $scope.submitButtonText = "Submit";
+          $scope.loading = false;
+          $scope.urlerror = false;
         $scope.getResults = function() {
           $log.log("test");
 
@@ -72,9 +88,16 @@
           success(function(results) {
             $log.log(results);
             getWordCount(results);
+            $scope.wordcounts = null;
+            $scope.loading = true;
+            $scope.urlerror = false;
+            $scope.submitButtonText = 'Loading......';
           }).
           error(function(error) {
             $log.log(error);
+            $scope.urlerror = true;
+            $scope.loading = false;
+            $scope.submitButtonText = 'Submit';
           });
 
 
@@ -88,6 +111,8 @@
                       $log.log(data, status);
                     } else if (status == 200){
                       $log.log(data);
+                      $scope.loading = false;
+                      $scope.submitButtonText = 'Submit';
                       $scope.wordcounts = data;
                       $timeout.cancel(timeout);
                       return false;
@@ -102,7 +127,35 @@
         };
       }
 
-      ]);
+      ])
+      .directive('wordCountChart', ['$parse', function($sparse){
+        return {
+          restrict: 'E',
+          replace: true,
+          template: '<div id="chart"></div>',
+          link: function(scope) {
+            scope.$watch('wordcounts', function(){
+              var data = scope.wordcounts;
+              for (var word in data){
+                d3.select('#chart')
+                .append('div')
+                .selectAll('div')
+                .data(word[0])
+                .enter()
+                .append('div')
+                .style('width', function(){
+                  return (data[word] * 20) + 'px';
+                })
+                .text(function(d){
+                  return word;
+                });
+              }
+
+            }, true);
+          }
+        };
+      }
+    ]);
 
     }());
 

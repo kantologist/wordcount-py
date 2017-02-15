@@ -15,7 +15,9 @@
     <div class="container">
       <div class="row">
         <div class="col-sm-5 col-sm-offset-1">
-          <h1>Wordcount 3000</h1>
+          <h1>Wordcount: Web + Data Demo</h1>
+          <br>
+          <p> Enter any url and get the list of the most ocuuring words</p>
           <br>
           <form role="form" ng-submit="getResults()">
             <div class="form-group">
@@ -135,6 +137,7 @@
           template: '<div id="chart"></div>',
           link: function(scope) {
             scope.$watch('wordcounts', function(){
+              d3.select('#chart').selectAll('*').remove();
               var data = scope.wordcounts;
               for (var word in data){
                 d3.select('#chart')

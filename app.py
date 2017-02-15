@@ -23,6 +23,12 @@ q = Queue(connection=conn)
 
 from models import *
 
+def clean_me(html):
+    soup = BeautifulSoup(html)
+    for s in soup(['script', 'style']):
+        s.extract()
+    return ' '.join(soup.stripped_strings)
+
 def count_and_save_words(url):
         errors = []
 
@@ -34,7 +40,7 @@ def count_and_save_words(url):
             )
             return {"errors": errors}
 
-        raw = BeautifulSoup(r.text, 'html.parser').get_text()
+        raw = clean_me(r.text)
         nltk.data.path.append('./nltk_data/')
         tokens = nltk.word_tokenize(raw)
         text = nltk.Text(tokens)
@@ -88,7 +94,6 @@ def get_counts():
         func=count_and_save_words, args=(url,), result_ttl=5000
         )
     return job.get_id()
-
 
 
 

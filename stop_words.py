@@ -1,3 +1,5 @@
+from nltk.corpus import stopwords
+
 stops = [
     'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
     'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his',
@@ -15,5 +17,8 @@ stops = [
     'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's',
     't', 'can', 'will', 'just', 'don', 'should', 'now', 'id', 'var',
     'function', 'js', 'd', 'script', '\'script', 'fjs', 'document', 'r',
-    'b', 'g', 'e', '\'s', 'c', 'f', 'h', 'l', 'k'
+    'b', 'g', 'e', '\'s', 'c', 'f', 'h', 'l', 'k', 'u'
 ]
+stop = stopwords.words('english')
+stops= stops + stop
+stops = list(set(stops))

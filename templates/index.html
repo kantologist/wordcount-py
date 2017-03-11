@@ -17,7 +17,7 @@
         <div class="col-sm-5 col-sm-offset-1">
           <h1>Wordcount: Web + Data Demo</h1>
           <br>
-          <p> Enter any url and get the list of the most ocuuring words</p>
+          <p> Enter any url and get the list of the most occuring words</p>
           <br>
           <form role="form" ng-submit="getResults()">
             <div class="form-group">
@@ -44,9 +44,9 @@
                         </tr>
                     </thead>
               <tbody>
-            <tr ng-repeat="(key, val) in wordcounts">
-              <td>[[key]]</td>
-              <td>[[val]]</td>
+            <tr ng-repeat="element in wordcounts | orderBy: '-count'">
+              <td>[[element.word]]</td>
+              <td>[[element.count]]</td>
            </tr>
            </tbody>
            </table>
@@ -56,7 +56,7 @@
         </div>
       </div>
       <br>
-      <word-count-chart data="wordcounts"></word-count-chart>
+      <word-count-chart data="wordcount"></word-count-chart>
     </div>
     <br><br>
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -81,7 +81,7 @@
           $scope.submitButtonText = "Submit";
           $scope.loading = false;
           $scope.urlerror = false;
-        $scope.getResults = function() {
+          $scope.getResults = function() {
           $log.log("test");
 
           var userInput = $scope.url;
@@ -115,7 +115,14 @@
                       $log.log(data);
                       $scope.loading = false;
                       $scope.submitButtonText = 'Submit';
-                      $scope.wordcounts = data;
+                      $scope.wordcounts = [];
+                      angular.forEach(data, function(value, key){
+                        $scope.wordcounts.push({
+                          word:key,
+                          count:value
+                        });
+                      });
+                      $scope.wordcount = data;
                       $timeout.cancel(timeout);
                       return false;
                     }
@@ -136,10 +143,12 @@
           replace: true,
           template: '<div id="chart"></div>',
           link: function(scope) {
-            scope.$watch('wordcounts', function(){
+            scope.$watch('wordcount', function(){
               d3.select('#chart').selectAll('*').remove();
-              var data = scope.wordcounts;
+              var data = scope.wordcount;
+              console.log(data);
               for (var word in data){
+                console.log(word)
                 d3.select('#chart')
                 .append('div')
                 .selectAll('div')
